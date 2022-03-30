@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Mar  7 10:59:57 2022
-
-@author: krish
-"""
 import tensorflow as tf
 import numpy as np
 import os
@@ -134,8 +127,8 @@ def writeDataToCloud(data, file_path, file_type,time_utc=''):
                                         'vmin':get_cmap(s,encoded=True)[2],
                                         'vmax':get_cmap(s,encoded=True)[3]}
                 print('temp file initialized')
-		images = []
-		print('converting images')
+                images = []
+                print('converting images')
                 for pred in data:
                     for i in range(pred.shape[-1]):
                         buf = io.BytesIO()
@@ -149,10 +142,10 @@ def writeDataToCloud(data, file_path, file_type,time_utc=''):
                         buf.close()
                         count+=1
                 # Store coloured images into temp.name
-		print('saving as GIF')
+                print('saving as GIF')
                 imageio.mimsave(temp.name, images)
                 # Upload using GCSFileSystem object
-		print('uploading as GIF')
+                print('uploading as GIF')
                 FS.upload(temp.name, file_path)
                 temp.close()
                 # Delete file path of temp file
@@ -319,4 +312,3 @@ def run_model(data, model_path, scale, model_type):
     except:
         raise Exception('Model Error: Run Error in Model. Try re-downloading the model file')
     return output
-
