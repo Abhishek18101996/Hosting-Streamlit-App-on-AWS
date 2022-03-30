@@ -15,7 +15,6 @@ app = FastAPI()
 
 @app.get("/")
 def read_main():
-    s3_client = boto3.client('s3')
     
     return 'Nowcast API designed for Federal Aviation Administration'
 
