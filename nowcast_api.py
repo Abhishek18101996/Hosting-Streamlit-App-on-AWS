@@ -32,7 +32,7 @@ def nowcast(lat, lon, radius, time_utc, model_type, catalog_path, model_path, da
         # Run model
         output = run_model(data,model_path,scale=True,model_type=model_type)
         # Output as h5/GIF
-        display_path = writeDataToCloud(data = output,file_name =os.path.join(out_path,f'latest_nowcast_display_{lat}_{lon}.gif'),file_type='gif', time_utc=time_utc)
+        display_path = writeDataToCloud(data = output,file_path =os.path.join(out_path,f'latest_nowcast_display_{lat}_{lon}.gif'),file_type='gif', time_utc=time_utc)
         # output_path = save_h5(output,os.path.join(out_path,f'nowcast_output_{lat}_{lon}.h5'))
     except Exception as e:
         return {'Error': str(e)}
