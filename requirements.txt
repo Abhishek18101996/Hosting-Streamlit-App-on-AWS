@@ -78,7 +78,7 @@ google-resumable-media==2.3.2
 googleapis-common-protos==1.56.0
 grpcio==1.43.0
 h11==0.13.0
-h5py==2.8.0
+h5py==2.10.0
 httplib2==0.20.4
 httptools==0.3.0
 idna @ file:///home/conda/feedstock_root/build_artifacts/idna_1642433548627/work
