@@ -125,6 +125,7 @@ def writeDataToCloud(data, file_path, file_type,time_utc=''):
                 # For storing output as GIF
                 # Store predicted images in a temp file, use delete = False because we need to store these images to make a GIF
                 # If delete = True then all temp data gets deleted as soon as you temp.close()
+		
                 temp = tempfile.NamedTemporaryFile(delete=False, mode='w',suffix='.gif')
                 count = 0
                 # From visualize_result function in AnalyzeNowcast notebook
@@ -132,7 +133,9 @@ def writeDataToCloud(data, file_path, file_type,time_utc=''):
                                         'norm':get_cmap(s,encoded=True)[1],
                                         'vmin':get_cmap(s,encoded=True)[2],
                                         'vmax':get_cmap(s,encoded=True)[3]}
-                images = []
+                print('temp file initialized')
+		images = []
+		print('converting images')
                 for pred in data:
                     for i in range(pred.shape[-1]):
                         buf = io.BytesIO()
@@ -146,8 +149,10 @@ def writeDataToCloud(data, file_path, file_type,time_utc=''):
                         buf.close()
                         count+=1
                 # Store coloured images into temp.name
+		print('saving as GIF')
                 imageio.mimsave(temp.name, images)
                 # Upload using GCSFileSystem object
+		print('uploading as GIF')
                 FS.upload(temp.name, file_path)
                 temp.close()
                 # Delete file path of temp file
@@ -159,8 +164,8 @@ def writeDataToCloud(data, file_path, file_type,time_utc=''):
             pass
         # Return cloud path of saved GIF file
         return FS.url(file_path).replace('googleapis','cloud.google')
-    except Exception:
-        raise Exception('Output Error: Error writing data to Google Cloud Bucket')
+    except Exception as e:
+        raise Exception(e)
         
 
 def get_nowcast_data(lat, lon, radius, time_utc, catalog_path, data_path,closest_radius):
