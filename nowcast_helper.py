@@ -20,6 +20,8 @@ from tensorflow.keras.models import load_model
 import h5py
 import gcsfs
 import imageio
+import tempfile
+import io
 import matplotlib.pyplot as plt
 from google.cloud.storage import blob, bucket
 import pandas as pd
@@ -99,6 +101,67 @@ def readData(filename, fileindex, data_path):
 ############################################################################## 
 # Defining our own data generator with the help of make_nowcast_dataset 
 # Functions to filter the catalog and reading data in desired format
+
+def writeDataToCloud(data, file_path, file_type,time_utc=''):
+    project_name = 'trim-odyssey-345315'
+    credentials = "trim-odyssey-345315-19bfafdb90a1.json"
+    FS = gcsfs.GCSFileSystem(project=project_name, token=credentials)
+    file_path = file_path.replace('\\','/')
+    try:
+        if file_type=='data': 
+            try:
+                # For storing output as H5 file
+                temp = tempfile.NamedTemporaryFile(delete=False,mode='w',suffix='.h5') 
+                hf = h5py.File(temp.name, 'w')
+                hf.create_dataset('nowcast_predict', data = data)
+                hf.close()
+                FS.upload(temp.name, file_path)
+                temp.close()
+                os.unlink(temp.name)
+            except:
+                raise Exception('IO Error: Could not write H5 file. Check the out_path correctly or try reinstalling h5py')
+        elif file_type=='gif':
+            try:
+                # For storing output as GIF
+                # Store predicted images in a temp file, use delete = False because we need to store these images to make a GIF
+                # If delete = True then all temp data gets deleted as soon as you temp.close()
+                temp = tempfile.NamedTemporaryFile(delete=False, mode='w',suffix='.gif')
+                count = 0
+                # From visualize_result function in AnalyzeNowcast notebook
+                cmap_dict = lambda s: {'cmap':get_cmap(s,encoded=True)[0],
+                                        'norm':get_cmap(s,encoded=True)[1],
+                                        'vmin':get_cmap(s,encoded=True)[2],
+                                        'vmax':get_cmap(s,encoded=True)[3]}
+                images = []
+                for pred in data:
+                    for i in range(pred.shape[-1]):
+                        buf = io.BytesIO()
+                        plt.imshow(pred[:,:,i],**cmap_dict('vil'))
+                        plt.axis('off')
+                        plt.title(f'Nowcast prediction at time {time_utc}+{(count+1)*5}minutes')
+                        plt.savefig(buf, bbox_inches='tight')
+                        buf.seek(0)
+                        images.append(imageio.imread(buf))
+                        plt.close()
+                        buf.close()
+                        count+=1
+                # Store coloured images into temp.name
+                imageio.mimsave(temp.name, images)
+                # Upload using GCSFileSystem object
+                FS.upload(temp.name, file_path)
+                temp.close()
+                # Delete file path of temp file
+                os.unlink(temp.name)
+                # Saving files as GIF (https://stackoverflow.com/questions/41228209/making-gif-from-images-using-imageio-in-python)
+            except:
+                raise Exception('IO Error: Could not write GIF. Try reinstalling matplotlib (version<=3.2.0) and imageio')
+        else:
+            pass
+        # Return cloud path of saved GIF file
+        return FS.url(file_path).replace('googleapis','cloud.google')
+    except Exception:
+        raise Exception('Output Error: Error writing data to Google Cloud Bucket')
+        
 
 def get_nowcast_data(lat, lon, radius, time_utc, catalog_path, data_path,closest_radius):
 	try:

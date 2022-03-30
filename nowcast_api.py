@@ -7,7 +7,7 @@ Created on Mon Mar  7 10:59:57 2022
 """
 
 import os
-from nowcast_helper import get_nowcast_data, run_model, save_gif, save_h5
+from nowcast_helper import get_nowcast_data, run_model, save_gif, save_h5, writeDataToCloud
 import dateutil.parser
 
 # Use the following for testing nowcast(lat=37.318363, lon=-84.224203, radius=100, time_utc='2019-06-02 18:33:00', catalog_path='C:\\Users\\krish\\Documents\\Northeastern University\\Spring22\\DAMG 7245\\Assignment-4\\CATALOG.csv', model_path='C:\\Users\\krish\\Documents\\Northeastern University\\Spring22\\DAMG 7245\\Assignment-4\\models', data_path='C:\\Users\\krish\\Documents\\Northeastern University\\Spring22\\DAMG 7245\\Assignment-4\\sevir',out_path='C:\\Users\\krish\\Documents\\Northeastern University\\Spring22\\DAMG 7245\\Assignment-4\\output', model_type='gal', closest_radius=True)
@@ -32,10 +32,10 @@ def nowcast(lat, lon, radius, time_utc, model_type, catalog_path, model_path, da
         # Run model
         output = run_model(data,model_path,scale=True,model_type=model_type)
         # Output as h5/GIF
-        display_path = save_gif(data = output,file_name =os.path.join(out_path,f'latest_nowcast_display_{lat}_{lon}.gif'), time_utc=time_utc)
-        output_path = save_h5(output,os.path.join(out_path,f'nowcast_output_{lat}_{lon}.h5'))
+        display_path = writeDataToCloud(data = output,file_name =os.path.join(out_path,f'latest_nowcast_display_{lat}_{lon}.gif'),file_type='gif', time_utc=time_utc)
+        # output_path = save_h5(output,os.path.join(out_path,f'nowcast_output_{lat}_{lon}.h5'))
     except Exception as e:
         return {'Error': str(e)}
     
     # Return path for output
-    return {'data': output_path, 'display':display_path}
+    return {'display':display_path}
