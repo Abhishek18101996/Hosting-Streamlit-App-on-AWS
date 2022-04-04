@@ -1,2 +1,2 @@
 runtime: python37
-entrypoint: uvicorn nowcast_main:app --reload
+entrypoint: gunicorn -w 4 -k uvicorn.workers.UvicornWorker nowcast_main:app
